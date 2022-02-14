@@ -122,11 +122,11 @@ PlotUtil class for data visualization
 '''
 class PlotUtil(object):
 	@staticmethod
-	def Plotline(_dataset, legend_label='', font_size=14, is_show=True, is_savefig=False, datafile=''):
+	def Plotline(_dataset, plt_title='', legend_label='', font_size=14, is_show=True, is_savefig=False, datafile=''):
 		'''
-		Function: plot original and reconstruct ts as line on fig
+		Function: plot original and reconstruct ts vectors as lines on a figure.
 		@arguments: 
-		(in) _dataset: 		list dataset that can input two ts signals
+		(in) _dataset: 		list dataset that includes [original_ts, reconstruct_ts] 
 			legend_label:	legend label text list
 		    font_size:		font size for label and legend
 			is_show:		Display plot on screen
@@ -155,21 +155,24 @@ class PlotUtil(object):
 		## set x and y label text
 		plt.xlabel('Time slot', fontsize=font_size)
 		plt.ylabel('ENF coef', fontsize=font_size) 
+		plt.title(plt_title, fontsize=font_size+2)
 
 		## plot legend given legend label 
 		if(legend_label == ''):
 			plt.legend(leg_label, loc='best', fontsize=font_size)
 		else:
 			plt.legend(legend_label, loc='best', fontsize=font_size)
-		
-		## show figure if is_show is enabled
-		if( is_show ):
-			plt.show()
 
 		## save figure if is_savefig is enabled
 		if( is_savefig ):
 			figname = os.path.splitext(datafile)[0] +'.png'
 			plt.savefig(figname)
+
+		## show figure if is_show is enabled
+		if( is_show ):
+			plt.show()
+
+		## close plot	
 		plt.close()
 
 	@staticmethod

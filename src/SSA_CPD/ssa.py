@@ -238,9 +238,9 @@ class SingularSpectrumAnalysis():
 	def reconstruct(self, ts_vect, scaled=False):
 		''' Reconstruct ts given original ts_vect with length lag_length
 		input
-			ts_vect:			full time serial vector
+			ts_vect:			original time serial vector
 		returns
-			recon_ts: 			rebuild ts vector
+			recon_ts: 			reconstruct time serial vector
 		'''
 		if self.hankel_order is None:
 			# rule of thumb
@@ -268,7 +268,7 @@ class SingularSpectrumAnalysis():
 		## get original ts
 		original_ts = ts_scaled[:ts_size]
 
-		## initialize recon_ts to save rebuild ts vector
+		## initialize recon_ts to save reconstruct ts vector
 		recon_ts = np.zeros_like(original_ts)
 
 		## get Hankel matrix of original_ts
@@ -277,15 +277,17 @@ class SingularSpectrumAnalysis():
 		## apply svd to decompose hankel_ts
 		U_ts, Sigma_ts, V_ts = np.linalg.svd(hankel_ts, full_matrices=False)
 		
-		## rebuild recon_hankel by using n_eofs singuar vectors
+		## reconstruct recon_hankel by using n_eofs singuar vectors
 		recon_hankel = (U_ts[:,:sval_nums]).dot(np.diag(Sigma_ts[:sval_nums])).dot(V_ts[:sval_nums,:])
 		
-		## reconstruct ts
+		## use recon_hankel to reconstruct recon_ts
 		for idx in range(Q):
 			recon_ts[(idx):(idx + M)] = recon_hankel[:, idx]
 		
-		## use last point original_ts to iput last point of recon_ts
+		## use last point original_ts to iput last point of recon_ts to avoid missing point
 		recon_ts[-1] = original_ts[-1]
+
+		## return reconstruct ts vector.
 		return recon_ts
 
 	@staticmethod
@@ -307,7 +309,15 @@ class SingularSpectrumAnalysis():
 	
 	@staticmethod
 	def sigma_svd(hankel_matrix, n_eofs):
+		''' Get highest n_eofs singuar values of hankel_matrix 
+		input
+			hankel_matrix: 				hankel_matrix to decompose U,sigma and V
+			n_eofs: 					n components for EOFs
+		returns
+			sigma:						return sorted n_eofs singuar value list
+		'''
+		## apply svd to decompose hankel_ts
 		_, sigma, _ = np.linalg.svd(hankel_matrix, full_matrices=False)
+
+		## return highest n_eofs of sorted sigma
 		return sigma[:n_eofs] 
-
-

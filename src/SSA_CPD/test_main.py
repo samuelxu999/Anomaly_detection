@@ -32,34 +32,45 @@ def load_data():
 	return ts_data
 
 def show_data(args):
-	## load test data
-	ts_vector = load_data()
+	'''
+	Visualize original ts and reconstrct ts.
+	'''
+
+	## 1) load test data
+	ts_vector = load_data()[:-1]
 
 	dataset = []
 
-	## get original_ts given range
+	## 2) get original_ts by using ts_range as the starting point
 	ts_size = args.lag_length + args.hankel_order
 	original_ts= ts_vector[args.ts_range:args.ts_range+ts_size]
-	dataset.append(TypesUtil.np2list(original_ts))
+	dataset.append(original_ts)
 
-	recon_ssa = SingularSpectrumAnalysis(lag_length=args.lag_length, n_eofs=args.n_eofs, hankel_order=args.hankel_order)
-
+	## 3) use SSA to reconstruct ts vector
+	recon_ssa = SingularSpectrumAnalysis(	lag_length=args.lag_length, 
+											n_eofs=args.n_eofs, 
+											hankel_order=args.hankel_order)
 	recon_ts = recon_ssa.reconstruct(original_ts)
-
 	dataset.append(recon_ts)
 
+	## 4) set figure parameters
 	fig_file = "Data_figure"
 	leg_label = ['Original data','Reconstruct data']
-	PlotUtil.Plotline(dataset, legend_label=leg_label, is_show=args.show_fig, is_savefig=args.save_fig, datafile=fig_file)
+	fig_title = 'ts_range: {}, lag_length: {}, hankel_order: {}, n_eofs:{}'.format(args.ts_range, 
+										args.lag_length, args.hankel_order, args.n_eofs)
+	## plot figure
+	PlotUtil.Plotline(dataset, plt_title=fig_title, legend_label=leg_label, 
+						is_show=args.show_fig, is_savefig=args.save_fig, datafile=fig_file)
 	 
 
 def ssa_cpd(args):
-	## SSA change point detection test function
+	'''
+	SSA change point detection demo function
+	'''
 	## load time series data
-	ts_vector = load_data()
-	# print(ts_vector.shape)
+	ts_vector = load_data()[:-1]
 
-	## noisy tolerant 
+	## add noisy data 
 	if(args.op_status==1):
 		## inject noisy data
 		ts_vector[150:151]=0.1
@@ -70,7 +81,7 @@ def ssa_cpd(args):
 		ts_vector[204:205]=0.4
 		ts_vector[350:352]=0.2
 		ts_vector[450:451]=0.15	
-	## attack detect
+	## inject fake data
 	elif(args.op_status==2):
 		## inject noisy data
 		ts_vector[150:151]=0.1
@@ -102,14 +113,17 @@ def ssa_cpd(args):
 
 	## get exe time
 	exec_time=time.time()-start_time
-	print("SSA test running time: {:.3f} s".format(exec_time))
+	logger.info("SSA test running time: {:.3f} s".format(exec_time))
 
 	## 4) plot ts data and scores
 	PlotUtil.plot_data_and_score(ts_vector, W, h, args.show_fig)
 
 def ssa_performance(args):
+	'''
+	SSA change point detection performance evaluation function
+	'''
 	## load time series data
-	ts_vector = load_data()
+	ts_vector = load_data()[:-1]
 
 	## use a section of ts_vector to performe ssa
 	test_section = ts_vector[:300]
@@ -181,7 +195,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
 
 	parser.add_argument("--op_status", type=int, default=0, help="test case type.")
 
-	parser.add_argument("--ts_range", type=int, default=0, help="ts vector range in dataset.")
+	parser.add_argument("--ts_range", type=int, default=0, help="ts vector starting range in dataset.")
 
 	parser.add_argument("--lag_length", type=int, default=40, help="The window length (M) of a column vector in Hankel matrix.")
 

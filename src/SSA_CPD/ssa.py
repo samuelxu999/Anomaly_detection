@@ -235,6 +235,59 @@ class SingularSpectrumAnalysis():
 
 		return shift_W, h
 
+	def reconstruct(self, ts_vect, scaled=False):
+		''' Reconstruct ts given original ts_vect with length lag_length
+		input
+			ts_vect:			full time serial vector
+		returns
+			recon_ts: 			rebuild ts vector
+		'''
+		if self.hankel_order is None:
+			# rule of thumb
+			self.hankel_order = self.lag_length
+
+		assert isinstance(ts_vect, np.ndarray), "input array must be numpy array."
+		assert ts_vect.ndim == 1, "input array dimension must be 1."
+		assert isinstance(self.lag_length, int), "window length must be int."
+		assert isinstance(self.n_eofs, int), "number of components must be int."
+		assert isinstance(self.hankel_order, int), "order of partial time series must be int."
+
+		## ts normalization (optional)
+		if(scaled):
+			ts_scaled = MinMaxScaler(feature_range=(1, 2))\
+						.fit_transform(ts_vect.reshape(-1, 1))[:, 0]
+		else:
+			ts_scaled = ts_vect
+
+		## set parameters.
+		M = self.lag_length
+		Q = self.hankel_order
+		sval_nums = self.n_eofs
+		ts_size = M+Q
+
+		## get original ts
+		original_ts = ts_scaled[:ts_size]
+
+		## initialize recon_ts to save rebuild ts vector
+		recon_ts = np.zeros_like(original_ts)
+
+		## get Hankel matrix of original_ts
+		hankel_ts = _create_hankel(original_ts, M, Q, 0)
+
+		## apply svd to decompose hankel_ts
+		U_ts, Sigma_ts, V_ts = np.linalg.svd(hankel_ts, full_matrices=False)
+		
+		## rebuild recon_hankel by using n_eofs singuar vectors
+		recon_hankel = (U_ts[:,:sval_nums]).dot(np.diag(Sigma_ts[:sval_nums])).dot(V_ts[:sval_nums,:])
+		
+		## reconstruct ts
+		for idx in range(Q):
+			recon_ts[(idx):(idx + M)] = recon_hankel[:, idx]
+		
+		## use last point original_ts to iput last point of recon_ts
+		recon_ts[-1] = original_ts[-1]
+		return recon_ts
+
 	@staticmethod
 	def create_hankel(ts_vect, lag_length, hankel_order, start_id):
 		'''Create Hankel matrix.

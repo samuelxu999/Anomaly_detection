@@ -122,24 +122,25 @@ PlotUtil class for data visualization
 '''
 class PlotUtil(object):
 	@staticmethod
-	def Plotline(ENF_dataset, legend_label='', font_size=14, is_show=True, is_savefig=False, datafile=''):
+	def Plotline(_dataset, legend_label='', font_size=14, is_show=True, is_savefig=False, datafile=''):
 		'''
-		Function: plot ENF data as line on fig
+		Function: plot original and reconstruct ts as line on fig
 		@arguments: 
-		(in) ENF_dataset: 	list dataset that can input two ENF signals
-			   font_size:	font size for label and legend
-			     is_show:	Display plot on screen
-			  is_savefig:	Save plot on local as *.png
-			  	datafile:	file name to save plot
+		(in) _dataset: 		list dataset that can input two ts signals
+			legend_label:	legend label text list
+		    font_size:		font size for label and legend
+			is_show:		Display plot on screen
+			is_savefig:		Save plot on local as *.png
+			datafile:		file name to save plot
 		'''
-		ls_color=['g', 'seagreen', 'darkorange', 'r', 'b', 'gray']
+		ls_color=['g', 'r']
 		leg_label = []
 		## For each node to get ENF vector
-		for ENF_id in range(len(ENF_dataset)):
+		for ENF_id in range(len(_dataset)):
 			#generate x and y data
 			xdata = [];
 			ydata = [];
-			ls_dataset = ENF_dataset[ENF_id]
+			ls_dataset = _dataset[ENF_id]
 			## For each value in ENF vector to asssign <x,y>
 			for i in range(0, len(ls_dataset)):
 				xdata.append(i)
@@ -154,7 +155,6 @@ class PlotUtil(object):
 		## set x and y label text
 		plt.xlabel('Time slot', fontsize=font_size)
 		plt.ylabel('ENF coef', fontsize=font_size) 
-		# plt.ylim(59.995, 60.005)
 
 		## plot legend given legend label 
 		if(legend_label == ''):

@@ -24,27 +24,37 @@ from ssa import SingularSpectrumAnalysis
 logger = logging.getLogger(__name__)
 
 
-def show_data(args):
-	data_file = "./data/rho.pkl"
-
-	rho = FileUtil.pkl_read(data_file)
-
-	dataset = []
-	ls_data = TypesUtil.np2list(rho)
-	dataset.append(ls_data)
-
-	fig_file = "Data_figure"
-	PlotUtil.Plotline(dataset, is_show=args.show_fig, is_savefig=args.save_fig, datafile=fig_file)
-
 def load_data():
 	data_file = "./data/rho.pkl"
 
 	ts_data = FileUtil.pkl_read(data_file)
 
 	return ts_data
+
+def show_data(args):
+	## load test data
+	ts_vector = load_data()
+
+	dataset = []
+
+	## get original_ts given range
+	ts_size = args.lag_length + args.hankel_order
+	original_ts= ts_vector[args.ts_range:args.ts_range+ts_size]
+	dataset.append(TypesUtil.np2list(original_ts))
+
+	recon_ssa = SingularSpectrumAnalysis(lag_length=args.lag_length, n_eofs=args.n_eofs, hankel_order=args.hankel_order)
+
+	recon_ts = recon_ssa.reconstruct(original_ts)
+
+	dataset.append(recon_ts)
+
+	fig_file = "Data_figure"
+	leg_label = ['Original data','Reconstruct data']
+	PlotUtil.Plotline(dataset, legend_label=leg_label, is_show=args.show_fig, is_savefig=args.save_fig, datafile=fig_file)
 	 
 
-def ssa_test(args):
+def ssa_cpd(args):
+	## SSA change point detection test function
 	## load time series data
 	ts_vector = load_data()
 	# print(ts_vector.shape)
@@ -76,7 +86,10 @@ def ssa_test(args):
 	## start to count exe time
 	start_time=time.time()
 	## pre) initialize SSA object
-	cpd_ssa = SingularSpectrumAnalysis(lag_length=40, n_eofs=5, test_lag=20, hankel_order=40)
+	cpd_ssa = SingularSpectrumAnalysis(lag_length=args.lag_length, 
+										n_eofs=args.n_eofs, 
+										test_lag=args.test_lag, 
+										hankel_order=args.hankel_order)
 	
 	## 1) apply SSA to get Euclidean distances D
 	D = cpd_ssa.Dn_Edist(ts_vector, scaled=True)
@@ -115,7 +128,10 @@ def ssa_performance(args):
 		ls_time = []
 
 		## pre) initialize SSA object
-		cpd_ssa = SingularSpectrumAnalysis(lag_length=40, n_eofs=5, test_lag=20, hankel_order=40)
+		cpd_ssa = SingularSpectrumAnalysis(lag_length=args.lag_length, 
+											n_eofs=args.n_eofs, 
+											test_lag=args.test_lag, 
+											hankel_order=args.hankel_order)
 
 		## start to count exe time
 		start_time=time.time()	
@@ -160,9 +176,20 @@ def define_and_get_arguments(args=sys.argv[1:]):
 
 	parser.add_argument("--test_func", type=int, default=0, 
 						help="Execute test function: 0-show_data(), \
-													1-ssa_test()")
+													1-ssa_cpd() \
+													2-ssa_performance()")
 
 	parser.add_argument("--op_status", type=int, default=0, help="test case type.")
+
+	parser.add_argument("--ts_range", type=int, default=0, help="ts vector range in dataset.")
+
+	parser.add_argument("--lag_length", type=int, default=40, help="The window length (M) of a column vector in Hankel matrix.")
+
+	parser.add_argument("--hankel_order", type=int, default=40, help="Hankel matrix length (K or Q). In general Q<=M.")
+
+	parser.add_argument("--test_lag", type=int, default=20, help="The location of test matrix that is later than base matrix. In general p>M/2.")
+
+	parser.add_argument("--n_eofs", type=int, default=5, help="Top n_eofs sigular vectors.")
 
 	parser.add_argument("--show_fig", action="store_true", help="Show plot figure model.")
 
@@ -190,7 +217,7 @@ if __name__ == '__main__':
 	args = define_and_get_arguments()
 
 	if(args.test_func==1):
-		ssa_test(args)
+		ssa_cpd(args)
 	elif(args.test_func==2):
 		ssa_performance(args)
 	else:

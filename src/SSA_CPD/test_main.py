@@ -84,12 +84,17 @@ def ssa_cpd(args):
 	## inject fake data
 	elif(args.op_status==2):
 		## inject noisy data
-		ts_vector[150:151]=0.1
-		ts_vector[450:451]=0.15	
+		ts_vector[150:151]=0.5
+		ts_vector[155:156]=0.2
+		ts_vector[160:161]=0.4
+		ts_vector[300:301]=0.23
+		ts_vector[320:321]=0.15	
+		ts_vector[350:351]=0.18	
 
-		## inject fakedata
-		ts_vector[200:225]=0.3
-		ts_vector[330:340]=0.1		
+		## inject fakedata by using random number between range
+		for i in range(30):
+			ts_vector[200+i:200+i+1]=random.uniform(0.5, 0.1)
+			ts_vector[400+i:400+i+1]=random.uniform(0.5, 0.1)		
 	## normal data
 	else:
 		pass

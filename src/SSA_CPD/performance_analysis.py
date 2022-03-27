@@ -260,7 +260,7 @@ def plot_resource_usage(args):
 		ls_cpu.append(PreData.error_statistics(cpu_data))
 
 	ax_label = ['', 'CPU usage (%)']
-	legend_label=['Desktop (1.6 GHZ)', 'RPi 4 (1.5 GHZ)', 'RPi 3 (1.2 GHZ)']
+	legend_label=['Desktop \n(1.6 GHZ)', 'RPi 4 \n(1.5 GHZ)', 'RPi 3 \n(1.2 GHZ)']
 
 	VisualizeData.plot_errorBar(legend_label, ax_label, ls_cpu)
 

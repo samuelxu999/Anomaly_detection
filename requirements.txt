@@ -1,3 +1,7 @@
 numpy
-sklearn
+scikit-learn
 matplotlib
+scipy
+Pillow
+kiwisolver
+pyqt5
